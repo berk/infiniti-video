@@ -1,7 +1,5 @@
 require 'thor'
-require 'pp'
 require 'translit'
-require "FileUtils"
 
 module InfinitiVideo
   class Cli < Thor
