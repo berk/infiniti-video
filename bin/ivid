@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+# Abort beautifully with ctrl+c.
+Signal.trap(:INT) { abort "\nAborting." }
+
+# require 'infiniti_video'
+require "#{__dir__}/../lib/infiniti_video/cli.rb"
+
+InfinitiVideo::Cli.start

@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+
+require('./lib/infiniti_video/version.rb')
+
+system('gem build infiniti-video.gemspec')
+system("gem install infiniti-video-#{InfinitiVideo::VERSION}.gem")
