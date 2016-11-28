@@ -38,15 +38,21 @@ module InfinitiVideo
       puts "\n"
     end
 
-    desc 'convert', 'Converts source videos to target format (Shortcut: c)'
+    desc 'convert', 'Converts videos from the source folder to the Infiniti supported AVI format and saves them in the target folder (Shortcut: c)'
     method_option :source,  :aliases => '-s', :banner => 'source folder', :type => :string, :required => true
     method_option :target,  :aliases => '-t', :banner => 'target folder', :type => :string, :required => true
     method_option :archive, :aliases => '-a', :banner => 'archive folder', :type => :string, :required => false
     map 'c' => :convert
     def convert
-      source = validate_folder(options[:source])
       target = validate_folder(options[:target])
       archive = options[:archive] ? validate_folder(options[:archive]) : nil
+
+      if File.directory?(options[:source])
+        source = validate_folder(options[:source])
+      elsif File.file?(options[:source])
+        convert_file_to_folder(options[:source], target, archive)
+        exit
+      end
 
       count = 0
       Dir.entries(source).each do |file|
@@ -56,22 +62,7 @@ module InfinitiVideo
         next unless valid_video?(ext)
 
         count += 1
-        output = File.join(target, file.gsub(ext, 'avi'))
-
-        puts "\n*****************************************************"
-        puts "Converting \"#{input}\" to \"#{output}\" ..."
-        puts "*****************************************************"
-
-        if File.exist?(output)
-          puts 'The file has already been processed, skipping...'
-        else
-          convert_file(input, output)
-        end
-
-        if archive
-          puts "Archiving #{input} to #{archive}..."
-          FileUtils.move(input, archive)
-        end
+        convert_file_to_folder(input, target, archive)
       end
     end
 
@@ -109,6 +100,30 @@ module InfinitiVideo
 
     def valid_video?(ext)
       %w(avi mp4 mkv).include?(ext.downcase)
+    end
+
+    def convert_file_to_folder(source_file, target_folder, archive_folder = nil)
+      file = source_file.split('/').last
+      ext = file.split('.').last
+      return unless valid_video?(ext)
+      target_file = File.join(target_folder, file.gsub(ext, 'avi'))
+
+      puts "\n*****************************************************"
+      puts "Converting \"#{source_file}\" to \"#{target_file}\" ..."
+      puts "*****************************************************\n"
+
+      if File.exist?(target_file)
+        puts 'The file has already been processed, skipping...'
+      else
+        convert_file(source_file, target_file)
+      end
+
+      if archive_folder
+        puts "Archiving #{source_file} to #{archive_folder}..."
+        FileUtils.move(source_file, archive_folder)
+      end
+
+      target_file
     end
 
     def convert_file(source, target)
